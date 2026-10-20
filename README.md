@@ -53,6 +53,33 @@ Depois abra `http://localhost:8000`.
 
 A biblioteca `fivefilters/readability.php` ainda gera avisos `Deprecated` no PHP 8.3. O `-d error_reporting=...` acima esconde esses avisos.
 
+## A pasta `vendor/` e o Composer
+
+A pasta `vendor/` **não está neste repositório**. Ela é criada pelo [Composer](https://getcomposer.org), o gerenciador de pacotes do PHP, e guarda as bibliotecas de terceiros de que o projeto depende. É o equivalente à `node_modules` do Node.
+
+Depois de clonar o repositório, rode **uma vez**, na pasta do projeto:
+
+```bash
+composer install
+```
+
+O Composer lê o [`composer.json`](composer.json) e o [`composer.lock`](composer.lock) e baixa as bibliotecas nas mesmas versões. Sem isso, o `read.php` falha logo na primeira linha (`require_once('vendor/autoload.php')`), porque o arquivo `vendor/autoload.php` não existe.
+
+Se você não tem o Composer instalado, baixe o `composer.phar` em <https://getcomposer.org/download/> e use `php composer.phar install`. O `composer.phar` e o `vendor/` estão no [`.gitignore`](.gitignore) e não devem ser enviados ao git.
+
+Pontos importantes:
+
+- **Não edite nada dentro de `vendor/`.** Uma atualização do Composer apagaria a mudança.
+- Se apagar a pasta, `composer install` a recria.
+- O projeto usa uma única dependência direta, `fivefilters/readability.php`, que o `read.php` usa para extrair o texto principal de uma página. As demais bibliotecas são dependências dela.
+
+| Pacote | Licença | Para que serve |
+|---|---|---|
+| `fivefilters/readability.php` | Apache-2.0 | Extrai o texto principal da página (usado pelo `read.php`) |
+| `masterminds/html5` | MIT | Dependência do Readability |
+| `league/uri` e `league/uri-interfaces` | MIT | Dependências do Readability |
+| `psr/log` e `psr/http-message` | MIT | Dependências do Readability |
+
 ## Limitações conhecidas
 
 - Testado no lynx e em navegadores modernos. **Não foi testado em navegadores antigos reais.**
@@ -63,3 +90,5 @@ A biblioteca `fivefilters/readability.php` ainda gera avisos `Deprecated` no PHP
 ## Licença e créditos
 
 O FrogFind foi criado por **Action Retro**. Este fork mantém a licença original, **GNU GPL v3** (veja [`LICENSE`](LICENSE)), e as alterações acima também estão sob essa licença.
+
+As bibliotecas instaladas em `vendor/` mantêm as próprias licenças (Apache-2.0 e MIT, veja a tabela acima), que são compatíveis com a GPL v3. Elas não fazem parte deste repositório.
