@@ -33,16 +33,31 @@ $url = parse_url($article_url);
 $host = $url['host'];
 
 // Attempt to figure out what the requested URL content-type may be
-$context = stream_context_create(['http' => array('method' => 'HEAD')]);
+// (some sites, e.g. Wikipedia, reject requests that have no User-Agent)
+$context = stream_context_create(['http' => array(
+    'method' => 'HEAD',
+    'header' => "User-Agent: Mozilla/5.0 (compatible; FrogFind/1.0)\r\n"
+)]);
 $headers = get_headers($article_url, true, $context);
+// Servers may return header names in any case (e.g. HTTP/2 uses lowercase)
+$headers = $headers ? array_change_key_case($headers, CASE_LOWER) : array();
 
-if (!array_key_exists('Content-Type', $headers) || !array_key_exists('Content-Length', $headers)) {
+// Content-Length is optional (e.g. chunked or compressed responses don't send it)
+if (!array_key_exists('content-type', $headers)) {
     $error_text .=  "Failed to get the article, its server did not return expected details :( <br>";
 }
 else {
+    // Only use the last-provided value if an array was returned (ie. when there were redirects involved),
+    // and ignore parameters such as "; charset=UTF-8"
+    $header_content_type = is_array($headers['content-type']) ? end($headers['content-type']) : $headers['content-type'];
+    $header_mime_type = strtolower(trim(explode(';', $header_content_type)[0]));
+
     // Attempt to handle downloads or other mime-types by passing proxying them through.
-    if (!in_array($headers['Content-Type'], $compatible_content_types)) {
-        $filesize = $headers['Content-Length'];
+    if (!in_array($header_mime_type, $compatible_content_types)) {
+        $filesize = 0;
+        if (array_key_exists('content-length', $headers)) {
+            $filesize = is_array($headers['content-length']) ? end($headers['content-length']) : $headers['content-length'];
+        }
 
         // Check if the linked file isn't too large for us to proxy.
         if ($filesize > $proxy_download_max_filesize) {
@@ -51,11 +66,7 @@ else {
             die();
         }
         else {
-            $contentType = $headers['Content-Type'];
-            // Only use the last-provided content type if an array was returned (ie. when there were redirects involved)
-            if (is_array($contentType)) {
-                $contentType = $contentType[count($contentType)-1];
-            }
+            $contentType = $header_content_type;
 
             $filename = basename($url['path']);
 
@@ -89,7 +100,12 @@ $configuration
 
 $readability = new Readability($configuration);
 
-if(!$article_html = file_get_contents($article_url)) {
+//some sites (e.g. Wikipedia) reject requests that have no User-Agent
+$context = stream_context_create(array(
+    'http' => array('header' => "User-Agent: Mozilla/5.0 (compatible; FrogFind/1.0)\r\n")
+));
+
+if(!$article_html = file_get_contents($article_url, false, $context)) {
     $error_text .=  "Failed to get the article :( <br>";
 }
 
