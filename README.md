@@ -1,94 +1,96 @@
 # FrogFind (ASCII art)
 
+**English** | [Português (BR)](README.pt-BR.md)
+
 Fork of [FrogFind](https://github.com/ActionRetro/FrogFind), the search engine for vintage computers made by [Action Retro](https://youtube.com/ActionRetro).
 
 > Love the frog. Be the frog.
 
-Este fork acrescenta formas de ver as imagens das páginas em computadores e terminais muito limitados: telas só preto e branco, navegadores de texto (como o lynx) e terminais de 80 ou 40 colunas.
+This fork adds ways to view the images on a page on very limited computers and terminals: black-and-white-only screens, text-mode browsers (such as lynx), and 80- or 40-column terminals.
 
-## O que foi acrescentado
+## What was added
 
-Na página de uma imagem (`image.php`), além da imagem original, há novas opções em **View as**:
+On the image page (`image.php`), besides the original image, there are new options under **View as**:
 
-| Opção | O que faz | Funciona em |
+| Option | What it does | Works on |
 |---|---|---|
-| **Original** | Imagem comprimida, como no FrogFind original | Navegadores gráficos |
-| **Black & white** | GIF de 1 bit (preto e branco) com dithering Floyd-Steinberg, 300 px no maior lado | Navegadores gráficos, inclusive antigos e monocromáticos |
-| **ASCII art, 80 colunas** | Texto de 78 colunas dentro de `<pre>` | Qualquer navegador, inclusive de terminal |
-| **ASCII art, 40 colunas** | Texto de 38 colunas dentro de `<pre>` | Qualquer navegador, inclusive de terminal |
+| **Original** | Compressed image, as in the original FrogFind | Graphical browsers |
+| **Black & white** | 1-bit GIF (black and white) with Floyd-Steinberg dithering, 300 px on the longest side | Graphical browsers, including old and monochrome ones |
+| **ASCII art, 80 columns** | 78-column text inside `<pre>` | Any browser, including terminal ones |
+| **ASCII art, 40 columns** | 38-column text inside `<pre>` | Any browser, including terminal ones |
 
-O ASCII art tem duas polaridades:
+The ASCII art comes in two polarities:
 
-- **Normal:** quanto mais escuro o trecho da imagem, mais pesado o caractere. Para texto escuro em fundo claro.
-- **Inverted:** quanto mais claro o trecho, mais pesado o caractere. Para texto claro em fundo escuro, como a maioria dos terminais.
+- **Normal:** the darker the part of the image, the heavier the character. For dark text on a light background.
+- **Inverted:** the lighter the part of the image, the heavier the character. For light text on a dark background, like most terminals.
 
-O texto fica 2 colunas mais estreito que a tela (78 e 38), para que as linhas não quebrem em terminais que quebram na última coluna.
+The text is 2 columns narrower than the screen (78 and 38), so lines don't wrap on terminals that wrap at the last column.
 
-O GIF foi escolhido no lugar do PNG porque os navegadores mais antigos não leem PNG.
+GIF was chosen over PNG because the oldest browsers can't read PNG.
 
-## Arquivos alterados e novos
+## Changed and new files
 
-| Arquivo | Mudança |
+| File | Change |
 |---|---|
-| `image.php` | Menu **View as** e exibição do ASCII art. O link "Back to previous page" passou a usar o parâmetro `r`, para continuar apontando para o artigo depois de trocar de modo. |
-| `image_lib.php` | Novo. Baixa e valida a imagem (`frog_load_image`) e gera o ASCII art (`frog_ascii_art`). |
-| `image_filter.php` | Novo. Gera o GIF preto e branco (`?i=URL&m=bw`). |
-| `read.php` | Envia um `User-Agent` nas requisições, porque alguns sites (como a Wikipedia) recusam requisições sem ele. Os nomes dos cabeçalhos HTTP passam a ser lidos sem diferenciar maiúsculas de minúsculas, e o `Content-Length` deixou de ser obrigatório. |
+| `image.php` | **View as** menu and ASCII art display. The "Back to previous page" link now uses the `r` parameter, so it keeps pointing to the article after switching modes. |
+| `image_lib.php` | New. Downloads and validates the image (`frog_load_image`) and generates the ASCII art (`frog_ascii_art`). |
+| `image_filter.php` | New. Generates the black & white GIF (`?i=URL&m=bw`). |
+| `read.php` | Sends a `User-Agent` with its requests, because some sites (such as Wikipedia) reject requests without one. HTTP header names are now read case-insensitively, and `Content-Length` is no longer required. |
 
-`index.php`, `about.php` e `image_compressed.php` não foram alterados.
+`index.php`, `about.php` and `image_compressed.php` were not changed.
 
-## Como rodar localmente
+## Running locally
 
-Requisitos: PHP 8 com as extensões `gd`, `curl`, `openssl`, `mbstring` e `dom`, e o [Composer](https://getcomposer.org).
+Requirements: PHP 8 with the `gd`, `curl`, `openssl`, `mbstring` and `dom` extensions, and [Composer](https://getcomposer.org).
 
 ```bash
-# MacPorts (exemplo)
+# MacPorts (example)
 sudo port install php83 php83-gd php83-curl php83-openssl php83-mbstring
 
 composer install
 php -d error_reporting="E_ALL & ~E_DEPRECATED" -S localhost:8000
 ```
 
-Depois abra `http://localhost:8000`.
+Then open `http://localhost:8000`.
 
-A biblioteca `fivefilters/readability.php` ainda gera avisos `Deprecated` no PHP 8.3. O `-d error_reporting=...` acima esconde esses avisos.
+The `fivefilters/readability.php` library still raises `Deprecated` warnings on PHP 8.3. The `-d error_reporting=...` flag above hides them.
 
-## A pasta `vendor/` e o Composer
+## The `vendor/` folder and Composer
 
-A pasta `vendor/` **não está neste repositório**. Ela é criada pelo [Composer](https://getcomposer.org), o gerenciador de pacotes do PHP, e guarda as bibliotecas de terceiros de que o projeto depende. É o equivalente à `node_modules` do Node.
+The `vendor/` folder is **not in this repository**. It is created by [Composer](https://getcomposer.org), the PHP package manager, and holds the third-party libraries the project depends on. It is the equivalent of Node's `node_modules`.
 
-Depois de clonar o repositório, rode **uma vez**, na pasta do projeto:
+After cloning the repository, run **once**, in the project folder:
 
 ```bash
 composer install
 ```
 
-O Composer lê o [`composer.json`](composer.json) e o [`composer.lock`](composer.lock) e baixa as bibliotecas nas mesmas versões. Sem isso, o `read.php` falha logo na primeira linha (`require_once('vendor/autoload.php')`), porque o arquivo `vendor/autoload.php` não existe.
+Composer reads [`composer.json`](composer.json) and [`composer.lock`](composer.lock) and downloads the libraries at the same versions. Without this, `read.php` fails on its very first line (`require_once('vendor/autoload.php')`), because the file `vendor/autoload.php` doesn't exist.
 
-Se você não tem o Composer instalado, baixe o `composer.phar` em <https://getcomposer.org/download/> e use `php composer.phar install`. O `composer.phar` e o `vendor/` estão no [`.gitignore`](.gitignore) e não devem ser enviados ao git.
+If you don't have Composer installed, download `composer.phar` from <https://getcomposer.org/download/> and use `php composer.phar install`. `composer.phar` and `vendor/` are listed in [`.gitignore`](.gitignore) and should not be committed.
 
-Pontos importantes:
+Important points:
 
-- **Não edite nada dentro de `vendor/`.** Uma atualização do Composer apagaria a mudança.
-- Se apagar a pasta, `composer install` a recria.
-- O projeto usa uma única dependência direta, `fivefilters/readability.php`, que o `read.php` usa para extrair o texto principal de uma página. As demais bibliotecas são dependências dela.
+- **Don't edit anything inside `vendor/`.** A Composer update would erase your change.
+- If you delete the folder, `composer install` recreates it.
+- The project has a single direct dependency, `fivefilters/readability.php`, which `read.php` uses to extract the main text of a page. The other libraries are its dependencies.
 
-| Pacote | Licença | Para que serve |
+| Package | License | What it's for |
 |---|---|---|
-| `fivefilters/readability.php` | Apache-2.0 | Extrai o texto principal da página (usado pelo `read.php`) |
-| `masterminds/html5` | MIT | Dependência do Readability |
-| `league/uri` e `league/uri-interfaces` | MIT | Dependências do Readability |
-| `psr/log` e `psr/http-message` | MIT | Dependências do Readability |
+| `fivefilters/readability.php` | Apache-2.0 | Extracts the main text of the page (used by `read.php`) |
+| `masterminds/html5` | MIT | Readability dependency |
+| `league/uri` and `league/uri-interfaces` | MIT | Readability dependencies |
+| `psr/log` and `psr/http-message` | MIT | Readability dependencies |
 
-## Limitações conhecidas
+## Known limitations
 
-- Testado no lynx e em navegadores modernos. **Não foi testado em navegadores antigos reais.**
-- Só as novas opções (`image_filter.php` e `image_lib.php`) recusam endereços de rede local e limitam o download a 10 MB. O `image_compressed.php`, que vem do projeto original, não tem essa proteção. **Não exponha este servidor na internet sem revisar isso.**
-- O `image_compressed.php` tem dois problemas herdados do original, ainda não corrigidos: a detecção de PNG nunca é verdadeira e a saída é sempre JPEG.
-- As imagens são redimensionadas e convertidas no servidor, a cada requisição, sem cache.
+- Tested on lynx and modern browsers. **Not tested on real old browsers.**
+- Only the new options (`image_filter.php` and `image_lib.php`) reject local-network addresses and limit downloads to 10 MB. `image_compressed.php`, which comes from the original project, has no such protection. **Don't expose this server to the internet without reviewing this.**
+- `image_compressed.php` has two problems inherited from the original that are not yet fixed: the PNG check is never true, and the output is always JPEG.
+- Images are resized and converted on the server on every request, with no cache.
 
-## Licença e créditos
+## License and credits
 
-O FrogFind foi criado por **Action Retro**. Este fork mantém a licença original, **GNU GPL v3** (veja [`LICENSE`](LICENSE)), e as alterações acima também estão sob essa licença.
+FrogFind was created by **Action Retro**. This fork keeps the original license, **GNU GPL v3** (see [`LICENSE`](LICENSE)), and the changes above are also under that license.
 
-As bibliotecas instaladas em `vendor/` mantêm as próprias licenças (Apache-2.0 e MIT, veja a tabela acima), que são compatíveis com a GPL v3. Elas não fazem parte deste repositório.
+The libraries installed in `vendor/` keep their own licenses (Apache-2.0 and MIT, see the table above), which are compatible with the GPL v3. They are not part of this repository.
